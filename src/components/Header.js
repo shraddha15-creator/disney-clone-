@@ -1,24 +1,74 @@
-import styled from 'styled-components';
-import { auth, provider } from '../firebase';
+import styled from "styled-components";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
+import { auth, provider } from "../firebase";
+import {
+  selectUserName,
+  selectUserPhoto,
+  setUserLoginDetails,
+  setSignOutState,
+} from "../features/user/userSlice";
 
-import React from 'react'
+import React from "react";
 
 const Header = (props) => {
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const userName = useSelector(selectUserName);
+  const userPhoto = useSelector(selectUserPhoto);
 
-    const handleAuth = () => {
-        auth.signInWithPopup(provider).then((result) => {
-            console.log(result)
-        }).catch((error) => {
-            alert(error.message)
+  useEffect(() => {
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        setUser(user);
+        history.push("./home");
+      }
+    });
+  }, [userName]);
+
+  const handleAuth = () => {
+    if (!userName) {
+      auth
+        .signInWithPopup(provider)
+        .then((result) => {
+          setUser(result.user);
         })
+        .catch((error) => {
+          alert(error.message);
+        });
+    } else if (userName) {
+      auth
+        .signOut()
+        .then(() => {
+          dispatch(setSignOutState());
+          history.push("/");
+        })
+        .catch((err) => alert(err.message));
     }
+  };
 
-    return (
-        <Nav>
-            <Logo>
-                <img src='/images/logo.svg' alt='disney-logo' />
-            </Logo>
-            <NavMenu>
+  const setUser = (user) => {
+    dispatch(
+      setUserLoginDetails({
+        name: user.displayName,
+        email: user.email,
+        photo: user.photoURL,
+      })
+    );
+  };
+
+  return (
+    <Nav>
+      <Logo>
+        <img src="/images/logo.svg" alt="disney-logo" />
+      </Logo>
+
+      {!userName ? (
+        <Login onClick={handleAuth}> Login </Login>
+      ) : (
+        <>
+          <NavMenu>
             <a href="/home">
               <img src="/images/home-icon.svg" alt="HOME" />
               <span>HOME</span>
@@ -44,37 +94,44 @@ const Header = (props) => {
               <span>SERIES</span>
             </a>
           </NavMenu>
-          <Login onClick={handleAuth}>Login</Login>
-        </Nav>
-    )
+          <SignOut>
+            <UserImg src={userPhoto} alt={userName} />
+            <DropDown>
+              <span onClick={handleAuth}>Sign Out </span>
+            </DropDown>
+          </SignOut>
+        </>
+      )}
+    </Nav>
+  );
 };
 
 const Nav = styled.nav`
-postion: fixed;
-top: 0;
-left: 0;
-right: 0;
-height: 70px;
-background-color: #090b13;
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 0 36px;
-letter-spacing: 16px;
-z-index:3;
+  postion: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background-color: #090b13;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 36px;
+  letter-spacing: 16px;
+  z-index: 3;
 `;
 
 const Logo = styled.a`
-padding: 0;
-width: 90px;
-margin-top: 4px;
-max-height: 70px;
-font-size:0;
-display:inline-block;
-img{
+  padding: 0;
+  width: 90px;
+  margin-top: 4px;
+  max-height: 70px;
+  font-size: 0;
+  display: inline-block;
+  img {
     display: block;
     width: 100%;
-}
+  }
 `;
 
 const NavMenu = styled.div`
@@ -191,4 +248,4 @@ const SignOut = styled.div`
   }
 `;
 
-export default Header
+export default Header;
