@@ -1,8 +1,10 @@
 import styled from "styled-components";
+import { Link } from "react-router-dom"
 
 const Recommends = (props) => {
     return (
         <Container>
+        <h4>Recommends for you</h4>
             <Content>
                 <div>1</div>
                 <div>2</div>
