@@ -7,6 +7,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import db from '../firebase';
 import { setMovies } from '../features/movie/movieSlice';
 import { selectUserName } from '../features/user/userSlice'
+import NewDisney from './NewDisney';
+import Originals from './Originals';
+import Trending from './Trending';
 
 const Home = (props) => {
 
@@ -21,7 +24,7 @@ const Home = (props) => {
     db.collection('movies').onSnapshot((snapshot) => {
       snapshot.docs.map((doc) => {
         switch(doc.data().type){
-          case 'recommends':
+          case 'recommend':
                 recommends.push({id: doc.id, ...doc.data()})
                 break;
           case 'new':
@@ -52,6 +55,9 @@ const Home = (props) => {
             <ImgSlider />
             <Viewers />
             <Recommends />
+            <NewDisney />
+            <Originals />
+            <Trending />
         </Container>
     ) 
 }
